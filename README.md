@@ -86,12 +86,6 @@ speakgosy/
 └── go.sum
 ```
 
-## Dependencies
- `github.com/google/gopacket` -> Passive packet capture
- `github.com/pquerna/otp`     -> TOTP generation and validation
- `golang.org/x/crypto`        -> ChaCha20-Poly1305
-
-
 ## Building
 ```bash
 # Build both binaries
