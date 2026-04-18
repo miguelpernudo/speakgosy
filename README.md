@@ -1,9 +1,7 @@
 # SpeakGosy
 
 # WORK IN PROGRESS:
-## The structure of `internal/` is there, but it needs to be polished,
-checked to make sure it compiles and everything works, and comments 
-need to be added. The `main` functions are missing.
+## The structure of `internal/` is there, but it needs to be polished, checked to make sure it compiles and everything works, and comments need to be added. The `main` functions are missing.
 
 > *"In an internet of bots and mass scanning, your ports are prohibited. You must speak the word to *go* in."*
 
