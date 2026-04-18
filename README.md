@@ -3,7 +3,8 @@
 # WORK IN PROGRESS:
 ## The structure of `internal/` is there, but it needs to be polished, checked to make sure it compiles and everything works, and comments need to be added. The `main` functions are missing.
 
-> *"In an internet of bots and mass scanning, your ports are prohibited. You must speak the word to *go* in."*
+
+###> *"In an internet of bots and mass scanning, your ports are prohibited. You must speak the word to *go* in."*
 
 Secure and lightweight Single Packet Authorization (SPA) daemon written in Go. 
 Keeps a server with zero open ports until you send it the encrypted whisper. 
@@ -17,13 +18,11 @@ SpeakGosy remains active, monitoring the network.
 
 When you want to connect:
 
-1. The client builds a packet containing your IP, a one-time nonce, and a TOTP code.
+1. The client builds a packet containing your IP, a one-time nonce and a TOTP code.
 2. It encrypts everything with ChaCha20-Poly1305 and sends it as a UDP packet.
-3. The firewall drops the packet (but SpeakGosy saw it).
+3. The firewall drops the packet, but SpeakGosy saw it.
 4. SpeakGosy decrypts, verifies the nonce and TOTP.
 5. If valid, it opens the firewall for your IP only and you can SSH in.
-
-To a network scanner, the server looks like a black hole.
 
 
 ## Evading restrictive networks
