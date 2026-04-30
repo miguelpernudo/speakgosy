@@ -1,8 +1,6 @@
 # SpeakGosy
 
-# WORK IN PROGRESS:
-## The structure of `internal/` is there, but it needs to be polished, checked to make sure it compiles and everything works, and comments need to be added. The `main` functions are missing.
-
+# WORK IN PROGRESS
 
 > *"In an internet of bots and mass scanning, your ports are prohibited. You must speak the word to *go* in."*
 
@@ -16,29 +14,73 @@ replay attacks.
 Your server has a firewall that blocks all ports and drops all incoming traffic.
 SpeakGosy remains active, monitoring the network.
 
-When you want to connect:
+## How it works
 
-1. The client builds a packet containing your IP, a one-time nonce and a TOTP code.
-2. It encrypts everything with ChaCha20-Poly1305 and sends it as a UDP packet.
-3. The firewall drops the packet, but SpeakGosy saw it.
-4. SpeakGosy decrypts, verifies the nonce and TOTP.
-5. If valid, it opens the firewall for your IP only and you can SSH in.
+    CLIENT                                             SERVER
+    ──────                                             ──────
+generates nonce + TOTP               
+  (totp/totp.go)                      
+  
+       │                            
+
+builds Payload {ip, nonce, TOTP}     
+  (packet/payload.go)                 
+
+       │                            
+
+    encrypts it                             
+  (crypt/cipher.go)                   
+
+       │                            
+
+ encode + sends UDP                             
+(transport/dns.go & raw.go)       ────►          captures the packet
+                                            (transport/dns.go & raw.go)
+  
+                                                          │
+                                                      
+                                                  decrypts and parse
+                                        (crypt/cipher.go & packet/parser.go)
+                                        
+                                                          │
+                                                      
+                                              verifies nonce, for anti-replay
+                                                  (replay/cache.go)
+                                                  
+                                                          │
+                                                      
+                                                     verify TOTP
+                                                    (totp/totp.go)
+                                                    
+                                                          │
+                                              ┌───────────┴───────────┐
+                                           firewall                 proxy
+                                        (nftables.go)             (proxy.go)
+                                        
+                                           AllowIP                  Forward
+
+                                              │                        │
+
+                                           goroutine               TCP tunnel
+                                           RevokeIP                until EOF
+                                            (TTL)
 
 
 ## Evading restrictive networks
 
-At my university, when I'm connected to the Wi-Fi, it blocks me from connecting
-to my server. SpeakGosy tries to solve this problem by masquerading as a DNS query,
-and if that fails, it tries via HTTPS. The SSH connection is also made through 
+When you're connected to certain public networks, such as the university's Wi-Fi, If you try to connect to your server via SSH, the firewall on that network will most likely block that type of outbound traffic, so you won't be able to work from outside.
+
+SpeakGosy tries to solve this problem by masquerading as a DNS query,
+and if that fails, it tries via HTTPS. In the firewall mode, the SSH connection is also made through 
 port 443, avoiding using the prohibited port 22 in this public networks.
 
-DNS 53 UDP: Payload encoded in the QNAME of a valid DNS query.
-Raw 443 UDP: Passes as QUIC (HTTP/3) traffic, no disguise needed.
+DNS 53 UDP: Payload disguise as a valid DNS query.
+Raw 443 UDP: Passes as QUIC traffic (no disguise).
 
 ## Security properties
 
 Zero ports open:
-Nothing to scan, nothing to brute force
+Nothing to scan, nothing to brute force.
 
 Authenticated encryption:
 ChaCha20-Poly1305 ensures confidentiality and integrity.
