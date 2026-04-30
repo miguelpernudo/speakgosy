@@ -1,3 +1,5 @@
+//go:build firewall
+
 package firewall
 
 import (
